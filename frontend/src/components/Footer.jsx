@@ -15,10 +15,7 @@ function Footer() {
     <div class="copyright">
       &copy; Copyright <strong><span>repairnow</span></strong>. All Rights Reserved.
     </div>
-    {/* <div class="credits">
-     
-      Designed by <a href="https://bootstrapmade.com/">Piranavan</a>
-    </div> */}
+    
   </div>
 </footer>
       </div>
