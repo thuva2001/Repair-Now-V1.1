@@ -1,3 +1,4 @@
+
 import asynchandler from 'express-async-handler';
 import Mechanic from '../models/mechanicModel.js';
 import cloudinary from '../utils/Cloudinary.js';
@@ -78,12 +79,37 @@ const createMechanic = asynchandler(async (req, res) => {
 
   // @desc Get all mechanics with ispost true
 // @route GET /api/mechanic/getmechanic
-// @access Public (or Private, based on your requirement)
+
 const gettrueMechanic = asynchandler(async (req, res) => {
-  const mechanics = await Mechanic.find({ ispost: true });
-  res.json(mechanics);
-});
-  
+  const { lat, lng, maxDistance } = req.query;
+  console.log("1111111", lat, lng, maxDistance);
+ 
+ 
+  let query = { ispost: true }; // Default query
+ 
+ 
+  if (lat && lng) {
+    query.location = {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [parseFloat(lng), parseFloat(lat)], // [lng, lat]
+        },
+        $maxDistance: parseInt(maxDistance) || 5000, // Use user input or default to 5000m
+      },
+    };
+  }
+ 
+ 
+  try {
+    const mechanics = await Mechanic.find(query);
+    res.json(mechanics);
+  } catch (error) {
+    console.error("Error fetching mechanics:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+ });
+ 
   // @desc Get a single shop by ID
   // route GET /api/mechanic/ id
   // @access Private
@@ -151,36 +177,7 @@ const updateMechanicById = async (req, res) => {
   
   });
   
-  
-  export const getNearbyMechanics = async (req, res) => {
-    try {
-      const { latitude, longitude, maxDistance = 5000 } = req.query; // Default max distance = 5km
 
-      if (!latitude || !longitude) {
-        return res
-          .status(400)
-          .json({ message: "Latitude and Longitude are required" });
-      }
-
-      const mechanics = await Mechanic.aggregate([
-        {
-          $geoNear: {
-            near: {
-              type: "Point",
-              coordinates: [parseFloat(longitude), parseFloat(latitude)],
-            },
-            distanceField: "distance",
-            maxDistance: parseInt(maxDistance), // Convert to meters
-            spherical: true,
-          },
-        },
-      ]);
-
-      res.json(mechanics);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
   
   
   
